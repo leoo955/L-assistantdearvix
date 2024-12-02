@@ -41,32 +41,28 @@ async def install(ctx):
         await ctx.send("Cette commande ne peut être exécutée que dans le salon spécifique.")
         return
 
-    await ctx.send("Veuillez vérifier vos messages privés pour continuer l'installation.")
-
-    # Envoyer un message privé à l'utilisateur
-    user = ctx.author
-    await user.send("Veuillez télécharger le fichier `data.win` ici.")
+    await ctx.send("Veuillez télécharger le fichier `data.win` ici.")
 
     def check(message):
-        return message.author == user and isinstance(message.channel, discord.DMChannel) and message.attachments
+        return message.author == ctx.author and message.channel == ctx.channel and message.attachments
 
     message = await bot.wait_for('message', check=check)
     directory = load_directory()
     if not directory:
-        await user.send("Le répertoire n'est pas défini ou est invalide. Veuillez configurer 'config.txt'.")
+        await ctx.send("Le répertoire n'est pas défini ou est invalide. Veuillez configurer 'config.txt'.")
         return
 
     for attachment in message.attachments:
         if attachment.filename == "data.win":
             file_path = os.path.join(directory, attachment.filename)
             await attachment.save(file_path)
-            await user.send(f"Fichier `{attachment.filename}` enregistré dans `{file_path}`")
+            await ctx.send(f"Fichier `{attachment.filename}` enregistré dans `{file_path}`")
 
             # Demander à l'utilisateur le chemin du fichier du jeu
-            await user.send("Veuillez entrer le répertoire du jeu :")
+            await ctx.send("Veuillez entrer le répertoire du jeu :")
 
             def check_directory(message):
-                return message.author == user and isinstance(message.channel, discord.DMChannel)
+                return message.author == ctx.author and message.channel == ctx.channel
 
             game_directory_message = await bot.wait_for('message', check=check_directory)
             game_directory = game_directory_message.content
@@ -75,11 +71,11 @@ async def install(ctx):
                 if os.path.exists(game_file_path):
                     os.remove(game_file_path)
                 os.rename(file_path, game_file_path)
-                await user.send(f"Fichier `{attachment.filename}` déplacé vers `{game_file_path}`")
+                await ctx.send(f"Fichier `{attachment.filename}` déplacé vers `{game_file_path}`")
             else:
-                await user.send(f"Le répertoire du jeu `{game_directory}` n'existe pas.")
+                await ctx.send(f"Le répertoire du jeu `{game_directory}` n'existe pas.")
         else:
-            await user.send(f"Fichier `{attachment.filename}` n'est pas `data.win`.")
+            await ctx.send(f"Fichier `{attachment.filename}` n'est pas `data.win`.")
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
