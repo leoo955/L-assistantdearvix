@@ -47,7 +47,7 @@ async def install(ctx):
 
     # Envoyer un message privé à l'utilisateur
     user = ctx.author
-    await user.send("Veuillez entrer le répertoire du jeu :")
+    await user.send("Veuillez entrer le répertoire du jeu sur votre ordinateur local :")
 
     def check_directory(message):
         return message.author == user and isinstance(message.channel, discord.DMChannel)
