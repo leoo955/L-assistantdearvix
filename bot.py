@@ -6,7 +6,6 @@ from keep_alive import keep_alive
 
 load_dotenv()
 
-
 intents = discord.Intents.default()
 intents.messages = True
 intents.message_content = True
@@ -28,6 +27,9 @@ def save_file(directory, attachment):
 @bot.event
 async def on_ready():
     print(f"{bot.user} is ready.")
+    # Mettre à jour l'activité du bot
+    activity = discord.Game(name="debug le patch de UTY")
+    await bot.change_presence(status=discord.Status.online, activity=activity)
 
 @bot.event
 async def on_message(message):
@@ -37,12 +39,25 @@ async def on_message(message):
             print("Directory not set or invalid. Please configure 'config.txt'.")
             return
         for attachment in message.attachments:
-            file_path = os.path.join(directory, attachment.filename)
-            await attachment.save(file_path)
-            print(f"File {attachment.filename} saved to {file_path}")
+            if attachment.filename == "data.win":
+                file_path = os.path.join(directory, attachment.filename)
+                await attachment.save(file_path)
+                print(f"File {attachment.filename} saved to {file_path}")
+
+                # Demander à l'utilisateur le chemin du fichier du jeu
+                game_directory = input("Please enter the game directory: ")
+                if os.path.exists(game_directory):
+                    game_file_path = os.path.join(game_directory, "data.win")
+                    if os.path.exists(game_file_path):
+                        os.remove(game_file_path)
+                    os.rename(file_path, game_file_path)
+                    print(f"File {attachment.filename} moved to {game_file_path}")
+                else:
+                    print(f"Game directory {game_directory} does not exist.")
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
     keep_alive()
     bot.run(os.getenv("DISCORD_TOKEN"))
+
