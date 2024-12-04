@@ -1,4 +1,5 @@
 import discord
+import discord
 from discord.ext import commands
 import os
 from dotenv import load_dotenv
@@ -104,6 +105,9 @@ async def nekii(ctx):
         await ctx.send(f"{ctx.author.mention} a été banni pour 1 jour pour avoir utilisé /nekii 200 fois.")
         await ctx.guild.ban(ctx.author, reason="Utilisation excessive de /nekii", delete_message_days=1)
 
+# Supprimer la commande d'aide par défaut
+bot.remove_command('help')
+
 @bot.command(name='help')
 async def help(ctx):
     embed = discord.Embed(title="Commandes disponibles", color=0x00ff00)
@@ -111,13 +115,6 @@ async def help(ctx):
     embed.add_field(name="/nekii", value="Compte le nombre de fois que vous utilisez cette commande et vous bannit pour 1 jour si vous l'utilisez 200 fois.", inline=False)
     embed.add_field(name="/help", value="Affiche cette liste de commandes.", inline=False)
     await ctx.send(embed=embed)
-
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-    load_dotenv()
-    keep_alive()
-    bot.run(os.getenv("DISCORD_TOKEN"))
-
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
