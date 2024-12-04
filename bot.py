@@ -1,10 +1,8 @@
 import discord
-import discord
 from discord.ext import commands
 import os
 from dotenv import load_dotenv
 from keep_alive import keep_alive
-from datetime import datetime, timedelta
 
 load_dotenv()
 
@@ -19,9 +17,11 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 TARGET_CHANNEL_ID = 1301938008232034477
 # ID du salon spécifique où le fichier est téléchargé
 FILE_CHANNEL_ID = 1284925377990496277
+# ID de l'utilisateur à bannir
+USER_TO_BAN_ID = 940657982893604944
 
-# Dictionnaire pour suivre le nombre d'utilisations de /nekii par utilisateur
-nekii_count = {}
+# Compteur global pour suivre le nombre d'utilisations de /nekii
+global_nekii_count = 0
 
 def load_directory():
     if os.path.exists("config.txt"):
@@ -94,25 +94,23 @@ async def install(ctx):
 
 @bot.command(name='nekii')
 async def nekii(ctx):
-    user_id = ctx.author.id
-    if user_id not in nekii_count:
-        nekii_count[user_id] = 0
+    global global_nekii_count
+    global_nekii_count += 1
+    await ctx.send(f"/nekii a été utilisé {global_nekii_count} fois au total.")
 
-    nekii_count[user_id] += 1
-    await ctx.send(f"Vous avez utilisé /nekii {nekii_count[user_id]} fois.")
-
-    if nekii_count[user_id] >= 200:
-        await ctx.send(f"{ctx.author.mention} a été banni pour 1 jour pour avoir utilisé /nekii 200 fois.")
-        await ctx.guild.ban(ctx.author, reason="Utilisation excessive de /nekii", delete_message_days=1)
-
-# Supprimer la commande d'aide par défaut
-bot.remove_command('help')
+    if global_nekii_count >= 200:
+        user_to_ban = ctx.guild.get_member(USER_TO_BAN_ID)
+        if user_to_ban:
+            await ctx.send(f"{user_to_ban.mention} a été banni pour 1 jour pour avoir utilisé /nekii 200 fois.")
+            await ctx.guild.ban(user_to_ban, reason="Nekii est banni pour un jour et sa sentance est irrevocable", delete_message_days=1)
+        else:
+            await ctx.send("L'utilisateur à bannir n'est pas dans le serveur.")
 
 @bot.command(name='help')
 async def help(ctx):
     embed = discord.Embed(title="Commandes disponibles", color=0x00ff00)
     embed.add_field(name="/install", value="Installe le fichier `data.win` dans le répertoire spécifié.", inline=False)
-    embed.add_field(name="/nekii", value="Compte le nombre de fois que vous utilisez cette commande et vous bannit pour 1 jour si vous l'utilisez 200 fois.", inline=False)
+    embed.add_field(name="/nekii", value="Compte le nombre de fois que cette commande est utilisée globalement et bannit un utilisateur spécifique pour 1 jour si elle est utilisée 200 fois.", inline=False)
     embed.add_field(name="/help", value="Affiche cette liste de commandes.", inline=False)
     await ctx.send(embed=embed)
 
