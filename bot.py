@@ -3,6 +3,7 @@ from discord.ext import commands
 import os
 from dotenv import load_dotenv
 from keep_alive import keep_alive
+from datetime import datetime, timedelta
 
 load_dotenv()
 
@@ -10,12 +11,16 @@ intents = discord.Intents.default()
 intents.messages = True
 intents.message_content = True
 intents.guilds = True
+intents.members = True
 bot = commands.Bot(command_prefix="/", intents=intents)
 
 # ID du salon spécifique pour la commande
 TARGET_CHANNEL_ID = 1301938008232034477
 # ID du salon spécifique où le fichier est téléchargé
 FILE_CHANNEL_ID = 1284925377990496277
+
+# Dictionnaire pour suivre le nombre d'utilisations de /nekii par utilisateur
+nekii_count = {}
 
 def load_directory():
     if os.path.exists("config.txt"):
@@ -85,6 +90,34 @@ async def install(ctx):
                     return
 
     await user.send("Le fichier `data.win` n'a pas été trouvé dans le salon spécifique.")
+
+@bot.command(name='nekii')
+async def nekii(ctx):
+    user_id = ctx.author.id
+    if user_id not in nekii_count:
+        nekii_count[user_id] = 0
+
+    nekii_count[user_id] += 1
+    await ctx.send(f"Vous avez utilisé /nekii {nekii_count[user_id]} fois.")
+
+    if nekii_count[user_id] >= 200:
+        await ctx.send(f"{ctx.author.mention} a été banni pour 1 jour pour avoir utilisé /nekii 200 fois.")
+        await ctx.guild.ban(ctx.author, reason="Utilisation excessive de /nekii", delete_message_days=1)
+
+@bot.command(name='help')
+async def help(ctx):
+    embed = discord.Embed(title="Commandes disponibles", color=0x00ff00)
+    embed.add_field(name="/install", value="Installe le fichier `data.win` dans le répertoire spécifié.", inline=False)
+    embed.add_field(name="/nekii", value="Compte le nombre de fois que vous utilisez cette commande et vous bannit pour 1 jour si vous l'utilisez 200 fois.", inline=False)
+    embed.add_field(name="/help", value="Affiche cette liste de commandes.", inline=False)
+    await ctx.send(embed=embed)
+
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
+    keep_alive()
+    bot.run(os.getenv("DISCORD_TOKEN"))
+
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
