@@ -106,13 +106,6 @@ async def nekii(ctx):
         else:
             await ctx.send("L'utilisateur à bannir n'est pas dans le serveur.")
 
-@bot.command(name='help')
-async def help(ctx):
-    embed = discord.Embed(title="Commandes disponibles", color=0x00ff00)
-    embed.add_field(name="/install", value="Installe le fichier `data.win` dans le répertoire spécifié.", inline=False)
-    embed.add_field(name="/nekii", value="Compte le nombre de fois que cette commande est utilisée globalement et bannit un utilisateur spécifique pour 1 jour si elle est utilisée 200 fois.", inline=False)
-    embed.add_field(name="/help", value="Affiche cette liste de commandes.", inline=False)
-    await ctx.send(embed=embed)
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
