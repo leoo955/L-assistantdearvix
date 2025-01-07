@@ -3,6 +3,7 @@ from discord.ext import commands
 import os
 from dotenv import load_dotenv
 from keep_alive import keep_alive
+import random  # Ajout pour la commande de citation
 
 load_dotenv()
 
@@ -11,7 +12,7 @@ intents.messages = True
 intents.message_content = True
 intents.guilds = True
 intents.members = True
-bot = commands.Bot(command_prefix="/", intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 # ID du rôle à restreindre
 RESTRICTED_ROLE_ID = 1301286137293308045
@@ -76,6 +77,24 @@ async def nekii(ctx):
             await ctx.guild.ban(user_to_ban, reason="Nekii est banni pour un jour et sa sentence est irrévocable", delete_message_days=1)
         else:
             await ctx.send("L'utilisateur à bannir n'est pas dans le serveur.")
+
+# Nouvelle commande : /quote
+@bot.command(name='quote')
+async def quote(ctx):
+    quotes = [
+        "La vie, c'est comme une boîte de chocolats, on ne sait jamais sur quoi on va tomber.",
+        "Le courage n'est pas l'absence de peur, mais la capacité de la vaincre.",
+        "La simplicité est la sophistication suprême.",
+        "Le succès, c'est d'aller d'échec en échec sans perdre son enthousiasme.",
+        "La meilleure façon de prédire l'avenir est de le créer.",
+        "La seule limite à notre réalisation de demain est nos doutes d'aujourd'hui.",
+        "L'éducation est l'arme la plus puissante qu'on puisse utiliser pour changer le monde.",
+        "La créativité, c'est l'intelligence qui s'amuse.",
+        "La persévérance est la clé de la réussite.",
+        "La sagesse, c'est de savoir ce qu'il faut faire ; la vertu, c'est de le faire.",
+    ]
+    selected_quote = random.choice(quotes)
+    await ctx.send(f"**Citation du jour :**\n{selected_quote}")
 
 if __name__ == "__main__":
     keep_alive()
