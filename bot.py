@@ -13,7 +13,7 @@ intents.messages = True
 intents.message_content = True
 intents.guilds = True
 intents.members = True
-bot = commands.Bot(command_prefix="/", intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 # ID du rôle à restreindre
 RESTRICTED_ROLE_ID = 1301286137293308045
