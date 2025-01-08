@@ -19,6 +19,8 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 RESTRICTED_ROLE_ID = 1301286137293308045
 # ID du rôle à conserver les permissions
 ALLOWED_ROLE_ID = 1289228157827682326
+# ID du rôle requis pour utiliser /lock et /unlock (remplacez par l'ID du rôle *)
+REQUIRED_ROLE_ID = 1289228157827682326  # Remplacez par l'ID du rôle *
 
 # Compteur global pour suivre le nombre d'utilisations de /nekii
 global_nekii_count = 0
@@ -33,8 +35,13 @@ async def on_ready():
     except Exception as e:
         print(f"Erreur lors de la synchronisation des commandes slash : {e}")
 
-# Commande /lock avec description
+# Vérification pour restreindre /lock et /unlock au rôle *
+def has_required_role(interaction: discord.Interaction) -> bool:
+    return any(role.id == REQUIRED_ROLE_ID for role in interaction.user.roles)
+
+# Commande /lock avec restriction
 @bot.tree.command(name="lock", description="Désactive l'envoi de messages pour un rôle spécifique dans un salon")
+@app_commands.check(has_required_role)  # Restreindre la commande au rôle *
 async def lock(interaction: discord.Interaction, channel: discord.TextChannel = None):
     channel = channel or interaction.channel
 
@@ -54,8 +61,9 @@ async def lock(interaction: discord.Interaction, channel: discord.TextChannel = 
 
     await interaction.response.send_message(f"Le salon {channel.mention} a été verrouillé pour le rôle {restricted_role.name}.")
 
-# Commande /unlock avec description
+# Commande /unlock avec restriction
 @bot.tree.command(name="unlock", description="Réactive l'envoi de messages pour un rôle spécifique dans un salon")
+@app_commands.check(has_required_role)  # Restreindre la commande au rôle *
 async def unlock(interaction: discord.Interaction, channel: discord.TextChannel = None):
     channel = channel or interaction.channel
 
@@ -103,6 +111,13 @@ async def quote(interaction: discord.Interaction):
                 await interaction.response.send_message(embed=embed)
             else:
                 await interaction.response.send_message("Désolé, je n'ai pas pu récupérer de citation pour le moment. 😢")
+
+# Gestion des erreurs pour les commandes restreintes
+@lock.error
+@unlock.error
+async def lock_unlock_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.CheckFailure):
+        await interaction.response.send_message("Vous n'avez pas la permission d'utiliser cette commande.", ephemeral=True)
 
 # Lancer le bot
 if __name__ == "__main__":
