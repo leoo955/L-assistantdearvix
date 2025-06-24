@@ -5,6 +5,9 @@ import os
 from dotenv import load_dotenv
 from keep_alive import keep_alive
 import aiohttp  # Pour la commande /quote
+from gtts import gTTS
+import asyncio
+
 
 load_dotenv()
 
@@ -111,6 +114,37 @@ async def quote(interaction: discord.Interaction):
                 await interaction.response.send_message(embed=embed)
             else:
                 await interaction.response.send_message("Désolé, je n'ai pas pu récupérer de citation pour le moment. 😢")
+@bot.tree.command(name="tts", description="Lit un message vocalement dans ton salon vocal.")
+@app_commands.describe(message="Le message à lire")
+async def tts(interaction: discord.Interaction, message: str):
+    if not interaction.user.voice or not interaction.user.voice.channel:
+        await interaction.response.send_message("❌ Tu dois être dans un salon vocal pour utiliser cette commande.", ephemeral=True)
+        return
+
+    voice_channel = interaction.user.voice.channel
+
+    try:
+        # Connecte le bot au salon
+        vc = await voice_channel.connect()
+    except discord.ClientException:
+        vc = interaction.guild.voice_client  # S'il est déjà connecté
+
+    # Génère le MP3 avec gTTS
+    filename = f"tts_{interaction.user.id}.mp3"
+    tts = gTTS(text=message, lang='fr')
+    tts.save(filename)
+
+    # Joue le MP3 via FFmpeg
+    vc.play(discord.FFmpegPCMAudio(source=filename), after=lambda e: os.remove(filename))
+
+    await interaction.response.send_message(f"🔊 Lecture : \"{message}\"")
+
+    # Attends que la lecture se termine
+    while vc.is_playing():
+        await asyncio.sleep(1)
+
+    await vc.disconnect()
+
 
 # Gestion des erreurs pour les commandes restreintes
 @lock.error
